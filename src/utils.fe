@@ -1,0 +1,28 @@
+use std::precompiles
+
+pub fn get_42() -> u256 {
+    return 42
+}
+
+#test
+fn test_get_42() {
+    assert get_42() == 42
+}
+
+pub fn get_50() -> u256 {
+    return 50
+}
+
+#test
+fn test_get_50() {
+    assert get_50() == 50
+}
+
+#test
+fn test_precompile_ecrecover_add_mul() {
+    let mut x: address = precompiles::ec_recover(hash: 1, v: 2, r: 3, s: 4)
+    let mut add_and_add: (u256, u256) = precompiles::ec_add(x1: 1, y1: 2, x2: 1, y2: 2)
+    let mut res_2: (u256, u256) = precompiles::ec_mul(x: 1, y: 2, s: 2)
+    assert add_and_add.item0 == res_2.item0
+    assert add_and_add.item1 == res_2.item1
+}

@@ -1,5 +1,6 @@
 use std::buf::{MemoryBuffer, MemoryBufferWriter, MemoryBufferReader}
 use std::precompiles
+use std::evm
 
 struct G1Point {
     pub x: u256
@@ -115,7 +116,8 @@ pub fn pairing(a1: G1Point, a2: G2Point,
                c1: G1Point, c2: G2Point,
                d1: G1Point, d2: G2Point) -> bool {
 
-    let mut buf: MemoryBuffer = MemoryBuffer::new(len: 256) 
+    let input_len: u256 = 32 * 24 // all writers work now
+    let mut buf: MemoryBuffer = MemoryBuffer::new(len: input_len) 
     let mut writer: MemoryBufferWriter = buf.writer()
 
     writer.write(value: a1.x)
@@ -165,12 +167,13 @@ pub fn verifyProof(a: Array<u256, 2>,
     let mut vk_x: G1Point = G1Point(x: 0, y: 0)
     vk_x = add(p: vk_x, q: vk.IC[0])
 
-    let i: u256 = 0
+    let mut i: u256 = 0
 
     while i < 1 {
         assert input[i] < snark_scalar_field
         let mul_temp: G1Point = scalar_mul(p: vk.IC[i+1], r: input[i])
         vk_x = add(p: vk_x, q: mul_temp)
+        i += 1
     }
 
     let neg_proofA: G1Point = negate(p: proof.A)
@@ -192,9 +195,11 @@ pub fn verifyProof(a: Array<u256, 2>,
 #test
 fn test_verify_proof() {
     let verification: bool = verifyProof(
-        a: [0x28930e0aeb50e7e3b5f9a54a6abdce99978e00701914dfd4d87f8dc5ea9e1d02, 123123],
-        b: [[12123, 12313], [1313, 1313]],
-        c: [13131, 131313],
-        input: [131131]
+        a: [0x28930e0aeb50e7e3b5f9a54a6abdce99978e00701914dfd4d87f8dc5ea9e1d02, 0x02c1e99774e679c144aceac4e9fdbc67dc858533d9f49c5933939c89010131b7],
+        b: [[0x0684d8357689fb95e886a8251db0e142ffdda8032e314750455b9f5ff13159ca, 0x26189ebc171412019704e808c432062721db66c4a22635f20ed422a2147ad5bf], [0x005d309291fd34bef6248c17779114907b6d912a5a02ddae46d902dbd05e2e1c, 0x01673b4a2e94569e28e23a9ae808b9f92b4d21beca07522f79d16ec419a6e85c]],
+        c: [0x25170145c09315e2df3c93d155b39df35434469607b0121a16125224190a596a, 0x05467081343913d54408694735a8d149578e7cbb3168f2b4283a7fe2861a7a42],
+        input: [0x0000000000000000000000000000000000000000000000000000000000000021]
     )
+
+    assert verification == true
 }
